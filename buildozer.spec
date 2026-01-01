@@ -16,12 +16,11 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 
 # (str) Application versioning (method 1)
-# ESTA FOI A LINHA QUE FALTOU:
-version = 0.1
+version = 0.2
 
 # (list) Application requirements
-# Incluindo ffmpeg para a conversão funcionar
-requirements = python3,kivy==2.3.0,kivymd==1.1.1,pillow,ffmpeg
+# ALTERADO: Usando link direto do KivyMD master para compatibilidade com Kivy 2.3.0
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,ffmpeg
 
 # (list) Permissions
 android.permissions = READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,INTERNET
@@ -40,6 +39,9 @@ android.private_storage = True
 
 # (str) Bootstrap to use for android builds
 p4a.branch = master
+
+# (list) List of Java .jar files to add to the libs so that pyjnius can access
+# android.add_jars = foo.jar,bar.jar,path/to/more/*.jar
 
 [buildozer]
 
