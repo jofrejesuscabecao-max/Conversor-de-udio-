@@ -3,8 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,54 +13,45 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Limpar espaço é crucial para compilar FFmpeg (consome muito disco)
+      # 1. Configurar Java 17 (Obrigatório para Android API 34+)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 2. Limpeza de Disco Agressiva (FFmpeg consome muito espaço temporário)
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/share/swift
+          sudo docker image prune --all --force
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # CORREÇÃO AQUI: Adicionamos autopoint, gettext, libtool e cmake
+      # 3. Instalar Dependências de Sistema para Compilar FFmpeg
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            git \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            zlib1g-dev \
-            libffi-dev \
-            libssl-dev \
-            autoconf \
-            libtool \
-            libtool-bin \
-            automake \
-            autopoint \
-            gettext \
-            cmake \
-            pkg-config \
-            libltdl-dev
+            build-essential git ffmpeg libsdl2-dev libsdl2-image-dev \
+            libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev \
+            libavformat-dev libavcodec-dev zlib1g-dev libffi-dev libssl-dev \
+            autoconf libtool libtool-bin automake autopoint gettext cmake \
+            pkg-config libltdl-dev unzip zip
 
       - name: Install Buildozer
         run: pip install --upgrade buildozer cython
 
+      # 4. Compilar
+      # Usamos 'yes' para aceitar licenças do SDK automaticamente
       - name: Build with Buildozer
         id: buildozer
-        # yes | aceita os termos de licença do SDK automaticamente
         run: |
           yes | buildozer android debug
         continue-on-error: false
