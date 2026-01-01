@@ -15,24 +15,25 @@ source.dir = .
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
 
-# (str) Application versioning (method 1)
-version = 0.2
+# (str) Application versioning
+version = 0.3
 
 # (list) Application requirements
-# ALTERADO: Usando link direto do KivyMD master para compatibilidade com Kivy 2.3.0
-requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,ffmpeg
+# Usando KivyMD master para compatibilidade e ffmpeg
+requirements = python3,kivy==2.3.0,https://github.com/kivymd/KivyMD/archive/master.zip,pillow,ffmpeg,openssl
 
 # (list) Permissions
 android.permissions = READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,INTERNET
 
-# (int) Target Android API, should be as high as possible.
+# (int) Target Android API
 android.api = 34
 
-# (int) Minimum API your APK will support.
+# (int) Minimum API
 android.minapi = 21
 
-# (str) Android NDK version to use
-android.ndk = 25b
+# --- CORREÇÃO CRÍTICA AQUI ---
+# NDK 25b quebra o FFmpeg. Usamos o 23c que é a versão LTS estável para bibliotecas C.
+android.ndk = 23c
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
 android.private_storage = True
@@ -40,8 +41,12 @@ android.private_storage = True
 # (str) Bootstrap to use for android builds
 p4a.branch = master
 
-# (list) List of Java .jar files to add to the libs so that pyjnius can access
-# android.add_jars = foo.jar,bar.jar,path/to/more/*.jar
+# (str) Architecture to build for
+# Vamos focar nas arquiteturas modernas para evitar erros de compilação em 32bits
+android.archs = arm64-v8a
+
+# (bool) Skip byte compile for .py files
+android.no-byte-compile = 1
 
 [buildozer]
 
