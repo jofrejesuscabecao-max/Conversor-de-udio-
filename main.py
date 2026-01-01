@@ -86,6 +86,7 @@ MDScreen:
             text: ""
             halign: "center"
             theme_text_color: "Error"
+            markup: True
 '''
 
 class AudioConverterApp(MDApp):
@@ -147,14 +148,10 @@ class AudioConverterApp(MDApp):
         filename = os.path.basename(input_file)
         name_without_ext = os.path.splitext(filename)[0]
         
-        # Definir local de saída
-        # No Android moderno, escrever na pasta pública é restrito. 
-        # Vamos salvar na pasta privada do app ou na raiz acessível se permitido.
+        # Lógica de saída segura para Android 15
         output_dir = os.path.dirname(input_file)
         
-        # Se formos impedidos de escrever na origem, usamos a pasta do app
         if platform == 'android':
-             # Caminho seguro no Android/data/...
             from android.storage import app_storage_path
             storage_path = app_storage_path()
             if storage_path:
@@ -163,7 +160,6 @@ class AudioConverterApp(MDApp):
         output_file = os.path.join(output_dir, f"{name_without_ext}_convertido.mp3")
 
         # Comando FFmpeg
-        # Nota: O Buildozer empacota o ffmpeg. Precisamos chamar o binário corretamente.
         ffmpeg_cmd = "ffmpeg"
         
         try:
@@ -178,9 +174,11 @@ class AudioConverterApp(MDApp):
             stdout, stderr = process.communicate()
 
             if process.returncode == 0:
-                self.update_status(f"Sucesso!\nSalvo em: {output_file}", error=False)
+                msg = f"Sucesso!\nSalvo em:\n[size=12]{output_file}[/size]"
+                self.update_status(msg, error=False)
             else:
-                self.update_status(f"Erro na conversão.\n{stderr.decode('utf-8')[-200:]}", error=True)
+                err_msg = stderr.decode('utf-8')
+                self.update_status(f"Erro FFmpeg:\n{err_msg[-150:]}", error=True)
 
         except Exception as e:
             self.update_status(f"Erro Crítico: {str(e)}", error=True)
@@ -193,11 +191,12 @@ class AudioConverterApp(MDApp):
             self.root.ids.status_label.text = message
             self.root.ids.status_label.theme_text_color = "Error" if error else "Custom"
             if not error:
-                self.root.ids.status_label.text_color = (0, 1, 0, 1)
+                self.root.ids.status_label.text_color = (0, 1, 0, 1) # Verde
         
         from kivy.clock import Clock
         Clock.schedule_once(_update)
 
 if __name__ == "__main__":
     AudioConverterApp().run()
+
 
