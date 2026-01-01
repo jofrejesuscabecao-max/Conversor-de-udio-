@@ -14,18 +14,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Limpar espaço é crucial para compilar FFmpeg (consome muito disco)
       - name: Free Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/share/swift
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install Dependencies
+      # CORREÇÃO AQUI: Adicionamos autopoint, gettext, libtool e cmake
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -45,14 +48,20 @@ jobs:
             libssl-dev \
             autoconf \
             libtool \
-            automake
+            libtool-bin \
+            automake \
+            autopoint \
+            gettext \
+            cmake \
+            pkg-config \
+            libltdl-dev
 
       - name: Install Buildozer
         run: pip install --upgrade buildozer cython
 
       - name: Build with Buildozer
         id: buildozer
-        # O comando 'android debug' gera o APK de debug
+        # yes | aceita os termos de licença do SDK automaticamente
         run: |
           yes | buildozer android debug
         continue-on-error: false
@@ -63,4 +72,5 @@ jobs:
           name: app-debug
           path: bin/*.apk
           retention-days: 5
+
 
